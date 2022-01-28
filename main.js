@@ -4,21 +4,22 @@ const name = document.querySelector('.name')
 const borders = document.querySelector('.borders')
 const nameURL = 'https://restcountries.com/v3.1/name/'
 const codeURL = 'https://restcountries.com/v3.1/alpha/'
-btn.onclick = function () {
+btn.onclick = async function () {
     borders.innerHTML = '';
-    fetch(nameURL + input.value)
-        .then((res) => res.json())
-        .then((data) => {
-            renderData(data)
-        })
-
-    function renderData(data) {
-        const [country] = data
-        name.innerText = country.name.common;
+    const response = await fetch(nameURL + input.value);
+    const [country] =  await response.json();
+    name.innerText = country.name.official;
+    const promises = country.borders.map(code => {
+        return fetch(codeURL + code);
+    });
+    console.log(country)
+    const countries = await Promise.all(promises)
+    for await (let country of countries) {
+        const [data] = await country.json()
         const li = document.createElement('li')
-        li.innerText = data[0].borders;
+        li.innerText = data.name.common;
         borders.append(li);
-        // borders.style.listStyle = ''
+        borders.style.listStyle = 'none'
         borders.style.marginBottom = '10px'
     }
 }
